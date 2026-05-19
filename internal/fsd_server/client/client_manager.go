@@ -237,6 +237,10 @@ func (cm *ClientManager) putSlice(clients []ClientInterface) {
 	cm.clientSlicePool.Put(clients)
 }
 
+func (cm *ClientManager) ReleaseClientSnapshot(clients []ClientInterface) {
+	cm.putSlice(clients)
+}
+
 func (cm *ClientManager) Shutdown(ctx context.Context) error {
 	if !cm.shuttingDown.CompareAndSwap(false, true) {
 		return fmt.Errorf("shutting down already in progress")

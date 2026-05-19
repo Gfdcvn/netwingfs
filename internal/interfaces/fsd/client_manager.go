@@ -20,6 +20,7 @@ type ClientManagerInterface interface {
 	GetWhazzupContent() *OnlineClients
 	Shutdown(ctx context.Context) error
 	GetClientSnapshot() []ClientInterface
+	ReleaseClientSnapshot(clients []ClientInterface)
 	AddClient(client ClientInterface) error
 	GetClient(callsign string) (ClientInterface, bool)
 	DeleteClient(callsign string) error

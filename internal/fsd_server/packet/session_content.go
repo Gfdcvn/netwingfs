@@ -42,7 +42,43 @@ func NewSessionContent(
 		simulatorServer: simulatorServer,
 	}
 	content.possibleCommands = commandHandler.GetPossibleCommands()
+	content.startAtisCleanup()
 	return content
+}
+
+func (content *SessionContent) startAtisCleanup() {
+	interval := content.heartbeatTimeout / 2
+	if interval < 10*time.Second {
+		interval = 10 * time.Second
+	}
+	if interval > time.Minute {
+		interval = time.Minute
+	}
+
+	ticker := time.NewTicker(interval)
+	go func() {
+		for range ticker.C {
+			content.cleanDisconnectedAtis()
+		}
+	}()
+}
+
+func (content *SessionContent) cleanDisconnectedAtis() {
+	defer func() {
+		if r := recover(); r != nil {
+			content.logger.ErrorF("Recovered from ATIS cleanup panic: %v", r)
+		}
+	}()
+
+	clients := content.clientManager.GetClientSnapshot()
+	defer content.clientManager.ReleaseClientSnapshot(clients)
+	for _, client := range clients {
+		if client == nil || !client.IsAtis() || !client.Disconnected() {
+			continue
+		}
+		content.logger.InfoF("[%s] cleanup disconnected ATIS session", client.Callsign())
+		client.Delete()
+	}
 }
 
 func (content *SessionContent) SendError(session *Session, result *Result) {
@@ -99,6 +135,10 @@ func (content *SessionContent) handleLine(session *Session, line []byte) {
 	if !result.Success {
 		content.logger.ErrorF("[%s](%s) command handle fail, %s, %s, %s", session.connId, session.callsign, result.Errno.String(), result.Err.Error(), line)
 		content.SendError(session, result)
+		return
+	}
+	if command == RemoveAtc || command == RemovePilot {
+		session.close.Store(true)
 	}
 }
 
