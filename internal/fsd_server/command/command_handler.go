@@ -159,16 +159,16 @@ func (content *CommandContent) defaultKeyFunc(token *jwt.Token) (interface{}, er
 }
 
 func (content *CommandContent) checkRatingAndFacility(session SessionInterface, reqRating int, callsign string) *Result {
-	if reqRating > session.User().Rating {
+	if reqRating != int(Observer) && reqRating > session.User().Rating {
 		return ResultError(RequestLevelTooHigh, true, callsign, nil)
 	}
-	facilityIdent := strings.Split(callsign, "_")
-	if len(facilityIdent) < 2 {
+	if len(callsign) <= 3 {
 		return ResultError(Custom, true, callsign, fmt.Errorf("invalid callsign %s", callsign))
 	}
-	ident := facilityIdent[len(facilityIdent)-1]
+	ident := strings.ToUpper(callsign[len(callsign)-3:])
 	if facility, exist := FacilityMap[ident]; !exist {
-		return ResultError(Custom, true, callsign, fmt.Errorf("invalid callsign %s", callsign))
+		// 如果没有匹配到，则判断是多人机组，席位设为OBS
+		session.SetFacilityIdent(OBS)
 	} else {
 		session.SetFacilityIdent(facility)
 	}
@@ -264,6 +264,13 @@ func (content *CommandContent) handleClientLogin(session SessionInterface, data 
 	reqRating := Rating(utils.StrToInt(data[4], 0) - 1)
 	if reqRating != Normal || !RatingFacilityMap[reqRating].CheckFacility(Pilot) {
 		return ResultError(RequestLevelTooHigh, true, callsign, nil)
+	}
+	if len(callsign) > 3 {
+		ident := strings.ToUpper(callsign[len(callsign)-3:])
+		if _, exist := FacilityMap[ident]; exist {
+			// 如果匹配到，说明这个人打算用飞行员登录管制席位，拒绝登录
+			return ResultError(Custom, true, callsign, fmt.Errorf("invalid callsign %s", callsign))
+		}
 	}
 	if session.Client() == nil {
 		client := c.NewClient(content.application, callsign, reqRating, protocol, realName, session, false)
