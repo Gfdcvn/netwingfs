@@ -296,6 +296,8 @@ func StartHttpServer(applicationContent *ApplicationContent) {
 	userGroup := apiGroup.Group("/users")
 	userGroup.POST("", userController.UserRegister)
 	userGroup.GET("", userController.GetUsers, jwtMiddleware, requireMainToken)
+	userGroup.DELETE("/:uid", userController.UserBan, jwtMiddleware, requireMainToken)
+	userGroup.POST("/:uid", userController.UserUnban, jwtMiddleware, requireMainToken)
 	userGroup.POST("/sessions", userController.UserLogin)
 	userGroup.POST("/sessions/fsd", userController.UserFsdLogin)
 	userGroup.GET("/sessions/fsd", userController.UserFsdToken, jwtMiddleware, requireMainToken)
@@ -425,6 +427,12 @@ func StartHttpServer(applicationContent *ApplicationContent) {
 	}
 
 	apiGroup.Use(middleware.Static(httpConfig.Store.LocalStorePath))
+
+	noRouteFound := service.NewApiResponse[any](
+		service.NewApiStatus("ERR_NOROUTE_MATCH", "没有匹配到任何路由", service.BadRequest),
+		nil,
+	)
+	e.Any("/*", func(c echo.Context) error { return noRouteFound.Response(c) })
 
 	applicationContent.Cleaner().Add(NewShutdownCallback(e, websocketServer))
 

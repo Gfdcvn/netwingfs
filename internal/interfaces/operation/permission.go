@@ -51,6 +51,12 @@ const (
 	OAuthClientEdit
 	OAuthClientDelete
 	SoftwareFlush
+	SoftwareShowList
+	SoftwareAdd
+	SoftwareEdit
+	SoftwareDelete
+	UserBan
+	UserUnban
 )
 
 var PermissionMap = map[string]Permission{
@@ -100,6 +106,12 @@ var PermissionMap = map[string]Permission{
 	"OAuthClientEdit":               OAuthClientEdit,
 	"OAuthClientDelete":             OAuthClientDelete,
 	"SoftwareFlush":                 SoftwareFlush,
+	"SoftwareShowList":              SoftwareShowList,
+	"SoftwareAdd":                   SoftwareAdd,
+	"SoftwareEdit":                  SoftwareEdit,
+	"SoftwareDelete":                SoftwareDelete,
+	"UserBan":                       UserBan,
+	"UserUnban":                     UserUnban,
 }
 
 func (p *Permission) HasPermission(perm Permission) bool {

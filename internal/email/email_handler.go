@@ -10,6 +10,16 @@ type EmailMessageHandler struct {
 	sender EmailSenderInterface
 }
 
+func (handler *EmailMessageHandler) HandleSendUserBannedEmailMessage(message *queue.Message) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (handler *EmailMessageHandler) HandleSenfUserUnBannedEmailMessage(message *queue.Message) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewEmailMessageHandler(
 	sender EmailSenderInterface,
 ) *EmailMessageHandler {

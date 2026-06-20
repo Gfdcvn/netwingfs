@@ -27,6 +27,8 @@ const (
 	UserInformationEdit             AuditEventType = "UserInformationEdit"
 	UserPermissionGrant             AuditEventType = "UserPermissionGrant"
 	UserPermissionRevoke            AuditEventType = "UserPermissionRevoke"
+	UserBanned                      AuditEventType = "UserBanned"
+	UserUnbanned                    AuditEventType = "UserUnbanned"
 	ActivityCreated                 AuditEventType = "ActivityCreated"
 	ActivityDeleted                 AuditEventType = "ActivityDeleted"
 	ActivityUpdated                 AuditEventType = "ActivityUpdated"

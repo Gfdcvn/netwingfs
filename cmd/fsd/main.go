@@ -180,6 +180,8 @@ func main() {
 	messageQueue.Subscribe(queue.SendPasswordResetEmail, emailMessageHandler.HandleSendPasswordResetEmailMessage)
 	messageQueue.Subscribe(queue.SendPermissionChangeEmail, emailMessageHandler.HandleSendPermissionChangeEmailMessage)
 	messageQueue.Subscribe(queue.SendTicketReplyEmail, emailMessageHandler.HandleSendTicketReplyEmailMessage)
+	messageQueue.Subscribe(queue.SendUserBannedEmail, emailMessageHandler.HandleSendUserBannedEmailMessage)
+	messageQueue.Subscribe(queue.SendUserUnBannedEmail, emailMessageHandler.HandleSenfUserUnBannedEmailMessage)
 
 	memoryCache := cache.NewMemoryCache[*string](*global.MetarCacheCleanInterval)
 	defer memoryCache.Close()

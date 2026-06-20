@@ -317,3 +317,50 @@ func (sender *EmailSender) SendTicketReplyEmail(data *TicketReplyEmailData) erro
 
 	return sender.config.EmailServer.DialAndSend(m)
 }
+
+func (sender *EmailSender) SendUserUnbannedEmail(data *UserUnbannedEmailData) error {
+	if sender.config.EmailServer == nil {
+		return nil
+	}
+	if !sender.templateConfig.UserUnBannedEmail.Enable {
+		return nil
+	}
+
+	email := strings.ToLower(data.User.Email)
+
+	m, err := sender.generateEmail(email, sender.templateConfig.UserUnBannedEmail, &UserUnbannedEmail{
+		Cid: utils.FormatCid(data.User.Cid),
+	})
+	if err != nil {
+		sender.logger.WarnF("Error rendering user unbanned email template: %v", err)
+		return ErrRenderingTemplate
+	}
+
+	sender.logger.InfoF("Sending user unbanned email to %s(%d)", email, data.User.Cid)
+
+	return sender.config.EmailServer.DialAndSend(m)
+}
+
+func (sender *EmailSender) SendUserBannedEmail(data *UserBannedEmailData) error {
+	if sender.config.EmailServer == nil {
+		return nil
+	}
+	if !sender.templateConfig.UserBannedEmail.Enable {
+		return nil
+	}
+
+	email := strings.ToLower(data.User.Email)
+
+	m, err := sender.generateEmail(email, sender.templateConfig.UserBannedEmail, &UserBannedEmail{
+		Cid:  utils.FormatCid(data.User.Cid),
+		Time: data.Time,
+	})
+	if err != nil {
+		sender.logger.WarnF("Error rendering user banned email template: %v", err)
+		return ErrRenderingTemplate
+	}
+
+	sender.logger.InfoF("Sending user banned email to %s(%d)", email, data.User.Cid)
+
+	return sender.config.EmailServer.DialAndSend(m)
+}

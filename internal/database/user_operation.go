@@ -144,6 +144,34 @@ func (userOperation *UserOperation) AddUser(user *User) error {
 	})
 }
 
+func (userOperation *UserOperation) UnBanUser(user *User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), userOperation.queryTimeout)
+	defer cancel()
+	return userOperation.db.Clauses(clause.Locking{Strength: "UPDATE"}).WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Model(user).Updates(map[string]any{
+			"banned":       false,
+			"banned_until": nil,
+		}).Error
+	})
+}
+
+func (userOperation *UserOperation) BanUser(user *User, banTime int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), userOperation.queryTimeout)
+	defer cancel()
+	updates := map[string]any{
+		"banned": true,
+	}
+	if banTime > 0 {
+		bannedUntil := time.Now().Add(time.Duration(banTime) * time.Second)
+		updates["banned_until"] = &bannedUntil
+	} else {
+		updates["banned_until"] = nil
+	}
+	return userOperation.db.Clauses(clause.Locking{Strength: "UPDATE"}).WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Model(user).Updates(updates).Error
+	})
+}
+
 func (userOperation *UserOperation) UpdateUserAtcTime(user *User, seconds int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), userOperation.queryTimeout)
 	defer cancel()

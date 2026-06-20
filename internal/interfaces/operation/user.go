@@ -17,6 +17,8 @@ type User struct {
 	Password          string              `gorm:"size:128;not null" json:"-"`
 	AvatarUrl         string              `gorm:"size:128;not null;default:''" json:"avatar_url"`
 	QQ                int                 `gorm:"default:0" json:"qq"`
+	Banned            bool                `gorm:"default:false" json:"banned"`
+	BannedUntil       *time.Time          `gorm:"default:null" json:"banned_until"`
 	Rating            int                 `gorm:"default:0" json:"rating"`
 	Guest             bool                `gorm:"default:false" json:"guest"`
 	UnderMonitor      bool                `gorm:"default:false;not null" json:"under_monitor"`
@@ -91,6 +93,10 @@ type UserOperationInterface interface {
 	NewUser(username string, email string, cid int, password string) (user *User, err error)
 	// AddUser 创建一个新用户(写入数据库), 在写入之前会调用 [UserOperationInterface.IsUserIdentifierTaken] 检查一致性约束, 当err为nil时表示创建成功
 	AddUser(user *User) (err error)
+	// BanUser 封禁用户
+	BanUser(user *User, banTime int) (err error)
+	// UnBanUser 解封用户
+	UnBanUser(user *User) (err error)
 	// UpdateUserAtcTime 更新用户管制时间, 当err为nil时表示更新成功
 	UpdateUserAtcTime(user *User, seconds int) (err error)
 	// UpdateUserPilotTime 更新用户连线飞行时间, 当err为nil时表示更新成功

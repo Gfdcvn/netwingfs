@@ -110,8 +110,15 @@ func (userService *UserService) UserLogin(req *RequestUserLogin) *ApiResponse[*R
 		return res
 	}
 
-	if user.Rating <= fsd.Ban.Index() {
-		return NewApiResponse[*ResponseUserLogin](ErrAccountSuspended, nil)
+	if user.Banned {
+		if user.BannedUntil == nil {
+			return NewApiResponse[*ResponseUserLogin](ErrAccountSuspended, nil)
+		}
+		if user.BannedUntil.Before(time.Now()) {
+			_ = userService.userOperation.UnBanUser(user)
+		} else {
+			return NewApiResponse[*ResponseUserLogin](ErrAccountSuspended, nil)
+		}
 	}
 
 	if pass := userService.userOperation.VerifyUserPassword(user, req.Password); !pass {
@@ -563,6 +570,17 @@ func (userService *UserService) UserFsdLogin(req *RequestFsdLogin) *ResponseFsdL
 		return &ResponseFsdLogin{Success: false, ErrMsg: "User not found"}
 	}
 
+	if user.Banned {
+		if user.BannedUntil == nil {
+			return &ResponseFsdLogin{Success: false, ErrMsg: "You were suspended"}
+		}
+		if user.BannedUntil.Before(time.Now()) {
+			_ = userService.userOperation.UnBanUser(user)
+		} else {
+			return &ResponseFsdLogin{Success: false, ErrMsg: "You were suspended"}
+		}
+	}
+
 	if pass := userService.userOperation.VerifyUserPassword(user, req.Password); !pass {
 		return &ResponseFsdLogin{Success: false, ErrMsg: "Password is Incorrect"}
 	}
@@ -584,4 +602,91 @@ func (userService *UserService) UserFsdToken(req *RequestFsdToken) *ApiResponse[
 
 	token := NewFsdClaims(userService.config.JWT, user).GenerateToken()
 	return NewApiResponse(SuccessGetFsdToken, token)
+}
+
+func (userService *UserService) UnBanUser(req *RequestUnBanUser) *ApiResponse[ResponseUnBanUser] {
+	if res := CheckPermission[ResponseUnBanUser](req.Permission, operation.UserUnban); res != nil {
+		return res
+	}
+
+	user, res := CallDBFunc[*operation.User, ResponseUnBanUser](func() (*operation.User, error) {
+		return userService.userOperation.GetUserByUid(req.UserId)
+	})
+	if res != nil {
+		return NewApiResponse[ResponseUnBanUser](ErrUserNotFound, false)
+	}
+	err := userService.userOperation.UnBanUser(user)
+	if err != nil {
+		return NewApiResponse[ResponseUnBanUser](ErrDatabaseFail, false)
+	}
+
+	userService.messageQueue.Publish(&queue.Message{
+		Type: queue.SendUserUnBannedEmail,
+		Data: &interfaces.UserUnbannedEmailData{
+			User: user,
+		},
+	})
+
+	userService.messageQueue.Publish(&queue.Message{
+		Type: queue.AuditLog,
+		Data: userService.auditLogOperation.NewAuditLog(
+			operation.UserUnbanned,
+			req.JwtHeader.Cid,
+			fmt.Sprintf("%04d", user.Cid),
+			req.Ip,
+			req.UserAgent,
+			nil,
+		),
+	})
+
+	return NewApiResponse[ResponseUnBanUser](SuccessUnBanUser, true)
+}
+
+func (userService *UserService) BanUser(req *RequestBanUser) *ApiResponse[ResponseBanUser] {
+	if res := CheckPermission[ResponseBanUser](req.Permission, operation.UserBan); res != nil {
+		return res
+	}
+
+	user, res := CallDBFunc[*operation.User, ResponseBanUser](func() (*operation.User, error) {
+		return userService.userOperation.GetUserByUid(req.UserId)
+	})
+	if res != nil {
+		return NewApiResponse[ResponseBanUser](ErrUserNotFound, false)
+	}
+	err := userService.userOperation.BanUser(user, req.Time)
+	if err != nil {
+		return NewApiResponse[ResponseBanUser](ErrDatabaseFail, false)
+	}
+
+	if req.Time == 0 {
+		userService.messageQueue.Publish(&queue.Message{
+			Type: queue.SendUserBannedEmail,
+			Data: &interfaces.UserBannedEmailData{
+				User: user,
+				Time: "永久",
+			},
+		})
+	} else {
+		userService.messageQueue.Publish(&queue.Message{
+			Type: queue.SendUserBannedEmail,
+			Data: &interfaces.UserBannedEmailData{
+				User: user,
+				Time: (time.Duration(req.Time) * time.Second).String(),
+			},
+		})
+	}
+
+	userService.messageQueue.Publish(&queue.Message{
+		Type: queue.AuditLog,
+		Data: userService.auditLogOperation.NewAuditLog(
+			operation.UserBanned,
+			req.JwtHeader.Cid,
+			fmt.Sprintf("%04d", user.Cid),
+			req.Ip,
+			req.UserAgent,
+			nil,
+		),
+	})
+
+	return NewApiResponse[ResponseBanUser](SuccessBanUser, true)
 }

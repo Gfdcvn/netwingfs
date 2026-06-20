@@ -1,9 +1,11 @@
 services:
   pocket-tts:
-    build: .
+    image: halfnothing/pocket-tts:latest
     container_name: pocket-tts
     ports:
       - "8000:8000"
+    environment:
+      - HTT
     volumes:
       - ./cache:/root/.cache/huggingface
     networks:

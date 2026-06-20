@@ -30,6 +30,8 @@ type EmailTemplateConfigs struct {
 	ApplicationRejectedEmail   *EmailTemplateConfig `json:"application_rejected_email"`
 	ApplicationProcessingEmail *EmailTemplateConfig `json:"application_processing_email"`
 	TicketReplyEmail           *EmailTemplateConfig `json:"ticket_reply_email"`
+	UserBannedEmail            *EmailTemplateConfig `json:"user_banned_email"`
+	UserUnBannedEmail          *EmailTemplateConfig `json:"user_unbanned_email"`
 }
 
 func defaultEmailTemplateConfig() *EmailTemplateConfigs {
@@ -82,6 +84,16 @@ func defaultEmailTemplateConfig() *EmailTemplateConfigs {
 		TicketReplyEmail: &EmailTemplateConfig{
 			FilePath:   "template/ticket_reply.template",
 			EmailTitle: "工单回复通知",
+			Enable:     true,
+		},
+		UserBannedEmail: &EmailTemplateConfig{
+			FilePath:   "template/user_banned.template",
+			EmailTitle: "封禁通知",
+			Enable:     true,
+		},
+		UserUnBannedEmail: &EmailTemplateConfig{
+			FilePath:   "template/user_unbanned.template",
+			EmailTitle: "解封通知",
 			Enable:     true,
 		},
 	}
@@ -231,6 +243,28 @@ func (config *EmailTemplateConfigs) checkValid(logger log.LoggerInterface) *Vali
 			"ticket_reply",
 			"fail to load ticket_reply_template",
 			"fail to parse ticket_reply_template",
+		)
+	})
+
+	eg.Go(func() error {
+		return validateTemplate(
+			logger,
+			config.UserBannedEmail,
+			global.UserBannedTemplateFilePath,
+			"user_banned",
+			"fail to load user_banned_template",
+			"fail to parse user_banned_template",
+		)
+	})
+
+	eg.Go(func() error {
+		return validateTemplate(
+			logger,
+			config.UserUnBannedEmail,
+			global.UserUnBannedTemplateFilePath,
+			"user_unbanned",
+			"fail to load user_unbanned_template",
+			"fail to parse user_unbanned_template",
 		)
 	})
 

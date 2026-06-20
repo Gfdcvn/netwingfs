@@ -32,8 +32,8 @@ var (
 )
 
 const (
-	AppVersion    = "0.8.6"
-	ConfigVersion = "0.8.7"
+	AppVersion    = "0.8.7"
+	ConfigVersion = "0.8.8"
 
 	SigningMethod = "HS512"
 
@@ -79,6 +79,8 @@ const (
 	ApplicationRejectedTemplateFilePath   = "/template/application_rejected.template"
 	ApplicationProcessingTemplateFilePath = "/template/application_processing.template"
 	TicketReplyTemplateFilePath           = "/template/ticket_reply.template"
+	UserBannedTemplateFilePath            = "/template/user_banned.template"
+	UserUnBannedTemplateFilePath          = "/template/user_unbanned.template"
 
 	DefaultFilePermissions     = 0644
 	DefaultDirectoryPermission = 0755

@@ -25,6 +25,8 @@ type EmailSenderInterface interface {
 	SendPasswordResetEmail(data *PasswordResetEmailData) error
 	SendPermissionChangeEmail(data *PermissionChangeEmailData) error
 	SendTicketReplyEmail(data *TicketReplyEmailData) error
+	SendUserBannedEmail(data *UserBannedEmailData) error
+	SendUserUnbannedEmail(data *UserUnbannedEmailData) error
 }
 
 type EmailMessageHandlerInterface interface {
@@ -38,6 +40,8 @@ type EmailMessageHandlerInterface interface {
 	HandleSendPasswordResetEmailMessage(message *queue.Message) error
 	HandleSendPermissionChangeEmailMessage(message *queue.Message) error
 	HandleSendTicketReplyEmailMessage(message *queue.Message) error
+	HandleSendUserBannedEmailMessage(message *queue.Message) error
+	HandleSenfUserUnBannedEmailMessage(message *queue.Message) error
 }
 
 type ApplicationPassedEmailData struct {
@@ -180,4 +184,22 @@ type TicketReplyEmail struct {
 	Cid   string // 用户CID
 	Title string // 工单标题
 	Reply string // 工单回复内容
+}
+
+type UserBannedEmailData struct {
+	User *operation.User
+	Time string
+}
+
+type UserBannedEmail struct {
+	Cid  string
+	Time string
+}
+
+type UserUnbannedEmailData struct {
+	User *operation.User
+}
+
+type UserUnbannedEmail struct {
+	Cid string
 }

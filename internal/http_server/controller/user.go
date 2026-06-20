@@ -25,6 +25,8 @@ type UserControllerInterface interface {
 	ResetUserPassword(ctx echo.Context) error
 	UserFsdLogin(ctx echo.Context) error
 	UserFsdToken(ctx echo.Context) error
+	UserBan(ctx echo.Context) error
+	UserUnban(ctx echo.Context) error
 }
 
 type UserController struct {
@@ -204,4 +206,30 @@ func (controller *UserController) UserFsdToken(ctx echo.Context) error {
 		return NewErrorResponse(ctx, ErrParseParam)
 	}
 	return controller.service.UserFsdToken(data).Response(ctx)
+}
+
+func (controller *UserController) UserUnban(ctx echo.Context) error {
+	data := &RequestUnBanUser{}
+	if err := ctx.Bind(data); err != nil {
+		controller.logger.ErrorF("UserUnban bind error: %v", err)
+		return NewErrorResponse(ctx, ErrParseParam)
+	}
+	if err := SetJwtInfoAndEchoContent(data, ctx); err != nil {
+		controller.logger.ErrorF("UserUnban jwt token parse error: %v", err)
+		return NewErrorResponse(ctx, ErrParseParam)
+	}
+	return controller.service.UnBanUser(data).Response(ctx)
+}
+
+func (controller *UserController) UserBan(ctx echo.Context) error {
+	data := &RequestBanUser{}
+	if err := ctx.Bind(data); err != nil {
+		controller.logger.ErrorF("UserBan bind error: %v", err)
+		return NewErrorResponse(ctx, ErrParseParam)
+	}
+	if err := SetJwtInfoAndEchoContent(data, ctx); err != nil {
+		controller.logger.ErrorF("UserBan jwt token parse error: %v", err)
+		return NewErrorResponse(ctx, ErrParseParam)
+	}
+	return controller.service.BanUser(data).Response(ctx)
 }

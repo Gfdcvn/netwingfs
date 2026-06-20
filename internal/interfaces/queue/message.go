@@ -21,6 +21,8 @@ const (
 	SendPermissionChangeEmail
 	SendTicketReplyEmail
 	SendMessageToClient
+	SendUserBannedEmail
+	SendUserUnBannedEmail
 	DeleteVerifyCode
 	KickClientFromServer
 	BroadcastMessage
@@ -42,6 +44,8 @@ var messageTypes = []string{
 	"SendPasswordResetEmail",
 	"SendPermissionChangeEmail",
 	"SendTicketReplyEmail",
+	"SendUserBannedEmail",
+	"SendUserUnBannedEmail",
 	"SendMessageToClient",
 	"DeleteVerifyCode",
 	"KickClientFromServer",

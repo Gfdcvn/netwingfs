@@ -42,6 +42,18 @@ func (content *CommandContent) verifyFsdUserInfo(session SessionInterface, calls
 	if err != nil {
 		return ResultError(InvalidCidPassword, true, callsign, err)
 	}
+
+	if user.Banned {
+		if user.BannedUntil == nil {
+			return ResultError(CidSuspended, true, callsign, nil)
+		}
+		if user.BannedUntil.Before(time.Now()) {
+			_ = content.userOperation.UnBanUser(user)
+		} else {
+			return ResultError(CidSuspended, true, callsign, nil)
+		}
+	}
+
 	if user.Rating <= Ban.Index() {
 		return ResultError(CidSuspended, true, callsign, nil)
 	}
@@ -97,6 +109,18 @@ func (content *CommandContent) verifyVatsimUserInfo(session SessionInterface, ca
 	if err != nil {
 		return ResultError(InvalidClient, true, callsign, err)
 	}
+
+	if user.Banned {
+		if user.BannedUntil == nil {
+			return ResultError(CidSuspended, true, callsign, nil)
+		}
+		if user.BannedUntil.Before(time.Now()) {
+			_ = content.userOperation.UnBanUser(user)
+		} else {
+			return ResultError(CidSuspended, true, callsign, nil)
+		}
+	}
+
 	if user.Rating <= Ban.Index() {
 		return ResultError(CidSuspended, true, callsign, nil)
 	}

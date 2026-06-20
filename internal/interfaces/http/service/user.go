@@ -22,7 +22,6 @@ var (
 	ErrWrongOriginPassword     = NewApiStatus("WRONG_ORIGIN_PASSWORD_ERROR", "原始密码不正确", BadRequest)
 	ErrQQInvalid               = NewApiStatus("QQ_INVALID", "qq号不正确", BadRequest)
 	ErrResetPasswordFail       = NewApiStatus("RESET_PASSWORD_FAIL", "重置密码失败", ServerInternalError)
-	NameNotAvailability        = NewApiStatus("INFO_NOT_AVAILABILITY", "用户信息不可用", Ok)
 	NameAvailability           = NewApiStatus("INFO_AVAILABILITY", "用户信息可用", Ok)
 	SuccessRegister            = NewApiStatus("REGISTER_SUCCESS", "注册成功", Ok)
 	SuccessLogin               = NewApiStatus("LOGIN_SUCCESS", "登陆成功", Ok)
@@ -35,6 +34,8 @@ var (
 	SuccessGetUserHistory      = NewApiStatus("GET_USER_HISTORY", "成功获取用户历史数据", Ok)
 	SuccessGetToken            = NewApiStatus("GET_TOKEN", "成功刷新秘钥", Ok)
 	SuccessResetPassword       = NewApiStatus("RESET_PASSWORD", "成功重置密码", Ok)
+	SuccessBanUser             = NewApiStatus("BAN_USER", "成功封禁用户", Ok)
+	SuccessUnBanUser           = NewApiStatus("UNBAN_USER", "成功解封用户", Ok)
 )
 
 type UserServiceInterface interface {
@@ -52,6 +53,8 @@ type UserServiceInterface interface {
 	ResetUserPassword(req *RequestResetUserPassword) *ApiResponse[bool]
 	UserFsdLogin(req *RequestFsdLogin) *ResponseFsdLogin
 	UserFsdToken(req *RequestFsdToken) *ApiResponse[ResponseFsdToken]
+	BanUser(req *RequestBanUser) *ApiResponse[ResponseBanUser]
+	UnBanUser(req *RequestUnBanUser) *ApiResponse[ResponseUnBanUser]
 }
 
 type RequestUserRegister struct {
@@ -180,3 +183,20 @@ type RequestFsdToken struct {
 }
 
 type ResponseFsdToken = string
+
+type RequestBanUser struct {
+	JwtHeader
+	EchoContentHeader
+	UserId uint `param:"uid"`
+	Time   int  `query:"time"`
+}
+
+type ResponseBanUser = bool
+
+type RequestUnBanUser struct {
+	JwtHeader
+	EchoContentHeader
+	UserId uint `param:"uid"`
+}
+
+type ResponseUnBanUser = bool
