@@ -10,16 +10,6 @@ type EmailMessageHandler struct {
 	sender EmailSenderInterface
 }
 
-func (handler *EmailMessageHandler) HandleSendUserBannedEmailMessage(message *queue.Message) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (handler *EmailMessageHandler) HandleSenfUserUnBannedEmailMessage(message *queue.Message) error {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewEmailMessageHandler(
 	sender EmailSenderInterface,
 ) *EmailMessageHandler {
@@ -94,6 +84,20 @@ func (handler *EmailMessageHandler) HandleSendPermissionChangeEmailMessage(messa
 func (handler *EmailMessageHandler) HandleSendTicketReplyEmailMessage(message *queue.Message) error {
 	if val, ok := message.Data.(*TicketReplyEmailData); ok {
 		return handler.sender.SendTicketReplyEmail(val)
+	}
+	return queue.ErrMessageDataType
+}
+
+func (handler *EmailMessageHandler) HandleSendUserBannedEmailMessage(message *queue.Message) error {
+	if val, ok := message.Data.(*UserBannedEmailData); ok {
+		return handler.sender.SendUserBannedEmail(val)
+	}
+	return queue.ErrMessageDataType
+}
+
+func (handler *EmailMessageHandler) HandleSendUserUnBannedEmailMessage(message *queue.Message) error {
+	if val, ok := message.Data.(*UserUnbannedEmailData); ok {
+		return handler.sender.SendUserUnbannedEmail(val)
 	}
 	return queue.ErrMessageDataType
 }

@@ -41,7 +41,7 @@ type EmailMessageHandlerInterface interface {
 	HandleSendPermissionChangeEmailMessage(message *queue.Message) error
 	HandleSendTicketReplyEmailMessage(message *queue.Message) error
 	HandleSendUserBannedEmailMessage(message *queue.Message) error
-	HandleSenfUserUnBannedEmailMessage(message *queue.Message) error
+	HandleSendUserUnBannedEmailMessage(message *queue.Message) error
 }
 
 type ApplicationPassedEmailData struct {

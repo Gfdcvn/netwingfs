@@ -44,6 +44,8 @@ func (sender *EmailSender) renderTemplate(template *config.EmailTemplateConfig, 
 
 func (sender *EmailSender) generateEmail(email string, config *config.EmailTemplateConfig, data interface{}) (*gomail.Message, error) {
 	content, err := sender.renderTemplate(config, data)
+
+	println(fmt.Sprintf("content: %+v", data))
 	if err != nil {
 		return nil, err
 	}
